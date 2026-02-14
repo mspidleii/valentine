@@ -35,7 +35,7 @@ function spawnParticle() {
     const p = document.createElement('img');
     const isStar = Math.random() > 0.5;
     
-    p.src = isStar ? 'star.jpg' : 'rose-petal.jpg';
+    p.src = isStar ? 'star.png' : 'rose-petal.png';
     p.className = 'falling-particle';
     
     p.style.left = Math.random() * 100 + 'vw';
