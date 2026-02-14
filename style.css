@@ -1,89 +1,78 @@
 body, html {
     margin: 0;
     padding: 0;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
+    width: 100vw;
+    height: 100vh;
     background-color: #000;
+    overflow: hidden;
     display: flex;
     justify-content: center;
     align-items: center;
-    font-family: 'Georgia', serif;
 }
 
 #container {
     position: relative;
-    /* This forces the container to be the exact same size as your background image */
-    width: 100vw;
-    height: 100vh;
+    /* This ensures your UI doesn't float to the side */
+    width: 100%;
+    height: 100%;
+    max-width: 1200px; /* Adjust based on your background width */
+    aspect-ratio: 4 / 3; 
 }
 
 #bg-layer {
     position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
     background: url('background-without-glass.jpg') no-repeat center center;
-    background-size: contain; /* Ensures the whole room fits the screen */
+    background-size: contain;
     z-index: 1;
 }
 
-/* Pins the Cloche directly over the rose */
+/* Forces the cloche to sit directly on the table in the center */
 #cloche {
     position: absolute;
     left: 50%;
-    top: 48%; /* Adjusted slightly for the table height */
+    top: 52%; /* Adjust this % to sit the cloche on the table */
     transform: translate(-50%, -50%);
-    height: 55%; /* Scale this until it sits perfectly over the rose */
+    height: 50%; /* Scale it to fit the rose height */
     z-index: 5;
     cursor: pointer;
-    transition: all 0.5s ease;
 }
 
-.shatter {
-    transform: translate(-50%, -100%) scale(1.5) !important;
-    opacity: 0 !important;
-}
-
-/* Pins the Question to the bottom center */
+/* Fixes the UI floating off to the right */
 #ui {
     position: absolute;
-    bottom: 10%;
+    bottom: 12%;
     left: 50%;
     transform: translateX(-50%);
-    z-index: 10;
     text-align: center;
     width: 100%;
+    z-index: 10;
 }
 
 #question {
     color: white;
-    font-size: 2rem;
-    text-shadow: 0 0 15px rgba(0,0,0,1);
+    font-family: 'Georgia', serif;
+    text-shadow: 0 0 10px rgba(0,0,0,0.8);
+    font-size: 2.5rem;
     margin-bottom: 20px;
 }
 
+.buttons {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
 button {
-    padding: 12px 35px;
-    font-size: 1.1rem;
-    border-radius: 30px;
+    padding: 15px 40px;
+    font-size: 1.2rem;
+    border-radius: 50px;
     border: none;
     cursor: pointer;
-    background: #ff4d6d;
-    color: white;
 }
 
-#no-btn {
-    position: absolute;
-    background: #444;
-}
-
-.falling-item {
-    position: absolute;
-    z-index: 100;
-    pointer-events: none;
-    animation: fall linear forwards;
-}
-
-@keyframes fall {
-    to { transform: translateY(110vh) rotate(360deg); }
-}
+#yes-btn { background: #ff4d6d; color: white; }
+#no-btn { background: #444; color: white; position: absolute; }
