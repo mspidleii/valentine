@@ -5,123 +5,541 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>The Enchanted Chalet</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap');
+
         :root {
             --pink-glow: rgba(255, 77, 109, 0.6);
             --gold-spark: #ffd700;
+            --warm-orange: rgba(255, 140, 50, 0.25);
+            --deep-rose: #c2185b;
         }
+
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
         body, html {
-            margin: 0; padding: 0; width: 100%; height: 100%;
-            overflow: hidden; background: #000; font-family: 'Georgia', serif;
+            width: 100%; height: 100%;
+            overflow: hidden; background: #0a0604;
+            font-family: 'Cormorant Garamond', 'Georgia', serif;
         }
 
-        /* 1. THE SETTING: Background Image */
+        /* ===== 1. THE SETTING ===== */
+
         #stage {
             position: relative; width: 100vw; height: 100vh;
-            background: url('background-with-glass.png') no-repeat center center;
-            background-size: cover;
-            transition: filter 1s ease;
+            overflow: hidden;
         }
 
-        /* 1.1 Fireplace Flicker Effect */
+        /* Dual background layers for crossfade */
+        .bg-layer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-repeat: no-repeat;
+            background-position: center center;
+            background-size: cover;
+            transition: opacity 1.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        #bg-with-glass {
+            background-image: url('background-with-glass.png');
+            z-index: 1; opacity: 1;
+        }
+
+        #bg-without-glass {
+            background-image: url('background-without-glass.jpg');
+            z-index: 0; opacity: 1;
+        }
+
+        /* Warm vignette overlay */
+        #vignette {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(ellipse at center, transparent 40%, rgba(5, 2, 0, 0.6) 100%);
+            z-index: 2; pointer-events: none;
+        }
+
+        /* ===== 1.1 FIREPLACE EFFECTS ===== */
+
         #fire-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle at 70% 50%, rgba(255, 100, 0, 0.15), transparent);
+            pointer-events: none; z-index: 3; mix-blend-mode: screen;
+        }
+
+        /* Warm ambient glow from fireplace (right side) */
+        #fire-glow-ambient {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background:
+                radial-gradient(ellipse at 75% 65%, rgba(255, 120, 40, 0.12) 0%, transparent 50%),
+                radial-gradient(ellipse at 70% 70%, rgba(255, 80, 20, 0.08) 0%, transparent 40%);
+            pointer-events: none; z-index: 3;
+            animation: ambient-glow 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes ambient-glow {
+            0% { opacity: 0.7; }
+            33% { opacity: 0.9; }
+            66% { opacity: 0.75; }
+            100% { opacity: 1; }
+        }
+
+        /* Fire flicker layers */
+        .fire-flicker {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             pointer-events: none; mix-blend-mode: color-dodge;
-            animation: flicker 0.15s infinite alternate;
         }
 
-        @keyframes flicker {
-            0% { opacity: 0.8; } 100% { opacity: 1; }
+        #fire-flicker-1 {
+            background: radial-gradient(circle at 73% 62%, rgba(255, 100, 0, 0.12), transparent 25%);
+            animation: flicker1 0.12s infinite alternate;
         }
 
-        /* 1.2 Falling Snow (Outside the window) */
+        #fire-flicker-2 {
+            background: radial-gradient(circle at 68% 58%, rgba(255, 160, 40, 0.08), transparent 20%);
+            animation: flicker2 0.18s infinite alternate;
+        }
+
+        #fire-flicker-3 {
+            background: radial-gradient(circle at 75% 55%, rgba(255, 60, 0, 0.06), transparent 15%);
+            animation: flicker3 0.09s infinite alternate;
+        }
+
+        @keyframes flicker1 {
+            0% { opacity: 0.6; transform: scaleY(1); }
+            100% { opacity: 1; transform: scaleY(1.02); }
+        }
+        @keyframes flicker2 {
+            0% { opacity: 0.4; }
+            100% { opacity: 0.9; }
+        }
+        @keyframes flicker3 {
+            0% { opacity: 0.5; transform: scaleX(0.98); }
+            100% { opacity: 1; transform: scaleX(1.02); }
+        }
+
+        /* Fire ember canvas */
+        #fire-embers {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 4;
+        }
+
+        /* ===== 1.2 FALLING SNOW ===== */
+
         .snowflake {
-            position: absolute; color: white; font-size: 10px; pointer-events: none;
-            z-index: 1; animation: snow-fall linear infinite;
+            position: absolute; top: -10px;
+            width: var(--size, 4px); height: var(--size, 4px);
+            background: radial-gradient(circle, rgba(255,255,255,0.9), rgba(255,255,255,0.1));
+            border-radius: 50%;
+            pointer-events: none; z-index: 5;
+            animation: snow-fall var(--duration, 4s) linear forwards;
+            opacity: var(--opacity, 0.6);
         }
 
         @keyframes snow-fall {
-            to { transform: translateY(100vh) translateX(20px); }
+            0% { transform: translateY(0) translateX(0) rotate(0deg); }
+            25% { transform: translateY(25vh) translateX(var(--drift, 10px)) rotate(90deg); }
+            50% { transform: translateY(50vh) translateX(calc(var(--drift, 10px) * -0.5)) rotate(180deg); }
+            75% { transform: translateY(75vh) translateX(var(--drift, 10px)) rotate(270deg); }
+            100% { transform: translateY(105vh) translateX(calc(var(--drift, 10px) * -1)) rotate(360deg); }
         }
 
-        /* 2. THE INTERACTION: The Cloche Logic */
+        /* ===== 1.3 ROSE GLOW (pulsing inside cloche) ===== */
+
+        #rose-glow {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -40%);
+            width: 120px; height: 120px;
+            background: radial-gradient(circle, rgba(255, 77, 130, 0.5), rgba(255, 50, 100, 0.2), transparent);
+            border-radius: 50%;
+            filter: blur(25px);
+            z-index: 6; pointer-events: none;
+            animation: rose-pulse 2.5s ease-in-out infinite;
+        }
+
+        @keyframes rose-pulse {
+            0%, 100% { opacity: 0.4; transform: translate(-50%, -40%) scale(1); }
+            50% { opacity: 0.8; transform: translate(-50%, -40%) scale(1.15); }
+        }
+
+        /* ===== 1.4 FLOATING PARTICLES INSIDE CLOCHE ===== */
+
+        .cloche-particle {
+            position: absolute;
+            pointer-events: none; z-index: 7;
+            animation: float-in-cloche var(--float-duration, 6s) ease-in-out infinite;
+            opacity: 0;
+        }
+
+        .cloche-particle.star {
+            width: var(--psize, 6px); height: var(--psize, 6px);
+            background: radial-gradient(circle, var(--gold-spark), rgba(255, 215, 0, 0.3), transparent);
+            border-radius: 50%;
+            box-shadow: 0 0 4px rgba(255, 215, 0, 0.6);
+        }
+
+        .cloche-particle.petal {
+            width: var(--psize, 8px); height: calc(var(--psize, 8px) * 0.6);
+            background: radial-gradient(ellipse, rgba(220, 50, 80, 0.8), rgba(180, 30, 60, 0.3));
+            border-radius: 50% 0 50% 0;
+            transform: rotate(var(--rotation, 45deg));
+        }
+
+        @keyframes float-in-cloche {
+            0% {
+                opacity: 0;
+                transform: translate(0, 0) rotate(0deg) scale(0.5);
+            }
+            15% {
+                opacity: var(--max-opacity, 0.8);
+            }
+            50% {
+                transform: translate(var(--dx, 10px), var(--dy, -30px)) rotate(180deg) scale(1);
+            }
+            85% {
+                opacity: var(--max-opacity, 0.8);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(var(--dx2, -10px), var(--dy2, -60px)) rotate(360deg) scale(0.3);
+            }
+        }
+
+        /* ===== 2. THE INTERACTION ===== */
+
         #cloche-hitbox {
             position: absolute; top: 50%; left: 50%;
             transform: translate(-50%, -60%);
-            width: 250px; height: 350px;
+            width: 220px; height: 320px;
             cursor: pointer; z-index: 20;
-            border-radius: 125px 125px 50px 50px;
+            border-radius: 110px 110px 40px 40px;
+            transition: transform 0.3s;
+        }
+
+        #cloche-hitbox:active {
+            transform: translate(-50%, -60%) scale(0.97);
         }
 
         #magic-glow {
             position: absolute; width: 100%; height: 100%;
-            background: var(--pink-glow); border-radius: inherit;
-            filter: blur(40px); opacity: 0.3;
-            transition: opacity 0.3s, transform 0.3s;
+            background: radial-gradient(ellipse, var(--pink-glow), rgba(255, 77, 109, 0.1), transparent);
+            border-radius: inherit;
+            filter: blur(35px); opacity: 0;
+            transition: opacity 0.5s ease, transform 0.5s ease;
             pointer-events: none;
         }
 
-        .cracks {
-            position: absolute; width: 100%; height: 100%;
-            border: 2px solid white; border-radius: inherit;
-            opacity: 0; pointer-events: none;
-            box-shadow: 0 0 15px white; transition: 0.3s;
+        /* Light cracks */
+        .crack-line {
+            position: absolute; pointer-events: none;
+            opacity: 0; transition: opacity 0.6s ease;
         }
 
-        /* 3. THE REVEAL: Question and Buttons */
+        .crack-line svg {
+            width: 100%; height: 100%;
+            filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.8)) drop-shadow(0 0 12px rgba(255, 200, 255, 0.4));
+        }
+
+        .crack-line svg path {
+            stroke: rgba(255, 255, 255, 0.9);
+            stroke-width: 1.5;
+            fill: none;
+            stroke-dasharray: 200;
+            stroke-dashoffset: 200;
+            transition: stroke-dashoffset 1s ease;
+        }
+
+        .crack-line.visible svg path {
+            stroke-dashoffset: 0;
+        }
+
+        #crack-1 {
+            top: 20%; left: 30%; width: 90px; height: 120px;
+        }
+
+        #crack-2 {
+            top: 35%; left: 55%; width: 80px; height: 100px;
+        }
+
+        #crack-3 {
+            top: 15%; left: 45%; width: 100px; height: 140px;
+        }
+
+        /* Glass shatter pieces */
+        .glass-shard {
+            position: absolute;
+            pointer-events: none; z-index: 25;
+            opacity: 0;
+        }
+
+        .glass-shard.shatter {
+            animation: shard-fly var(--shard-duration, 1.5s) cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+        }
+
+        @keyframes shard-fly {
+            0% {
+                opacity: 1;
+                transform: translate(0, 0) rotate(0deg) scale(1);
+            }
+            40% {
+                opacity: 0.9;
+            }
+            100% {
+                opacity: 0;
+                transform: translate(var(--sx, 100px), var(--sy, -200px)) rotate(var(--sr, 360deg)) scale(0);
+            }
+        }
+
+        /* ===== 3. THE REVEAL ===== */
+
         #proposal-ui {
-            position: absolute; bottom: 15%; width: 100%;
+            position: absolute; bottom: 12%; width: 100%;
             display: none; flex-direction: column; align-items: center;
-            z-index: 30; opacity: 0; transition: opacity 1s;
+            z-index: 30; opacity: 0;
+            transition: opacity 1.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .valentine-text {
-            color: white; font-size: 2.2rem; margin-bottom: 20px;
-            text-shadow: 0 0 15px var(--gold-spark), 0 0 5px black;
+            color: #fff;
+            font-family: 'Cinzel Decorative', 'Georgia', serif;
+            font-size: clamp(1.5rem, 5vw, 2.8rem);
+            font-weight: 400;
+            letter-spacing: 0.05em;
+            margin-bottom: 30px;
+            text-shadow:
+                0 0 20px rgba(255, 215, 0, 0.6),
+                0 0 40px rgba(255, 215, 0, 0.3),
+                0 2px 4px rgba(0, 0, 0, 0.8);
+            text-align: center;
+            padding: 0 20px;
+            animation: text-shimmer 3s ease-in-out infinite;
         }
 
-        .btn-container { display: flex; gap: 40px; position: relative; width: 300px; justify-content: center; }
+        @keyframes text-shimmer {
+            0%, 100% { text-shadow: 0 0 20px rgba(255, 215, 0, 0.6), 0 0 40px rgba(255, 215, 0, 0.3), 0 2px 4px rgba(0, 0, 0, 0.8); }
+            50% { text-shadow: 0 0 30px rgba(255, 215, 0, 0.8), 0 0 60px rgba(255, 215, 0, 0.4), 0 0 80px rgba(255, 150, 200, 0.2), 0 2px 4px rgba(0, 0, 0, 0.8); }
+        }
+
+        .btn-container {
+            display: flex; gap: 30px; position: relative;
+            justify-content: center; align-items: center;
+        }
+
         .btn {
-            padding: 15px 40px; font-size: 1.3rem; border-radius: 50px;
-            border: none; cursor: pointer; font-weight: bold; transition: 0.2s;
+            padding: 14px 44px;
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 1.2rem; font-weight: 700;
+            border-radius: 50px; border: none;
+            cursor: pointer; transition: all 0.3s ease;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
         }
-        #yesBtn { background: #ff4d6d; color: white; box-shadow: 0 0 20px #ff4d6d; }
-        #noBtn { background: #333; color: #999; }
 
-        /* Celebration Items */
+        #yesBtn {
+            background: linear-gradient(135deg, #ff4d6d, #c2185b);
+            color: white;
+            box-shadow:
+                0 0 20px rgba(255, 77, 109, 0.5),
+                0 0 40px rgba(255, 77, 109, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            animation: yes-glow 2s ease-in-out infinite;
+        }
+
+        @keyframes yes-glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(255, 77, 109, 0.5), 0 0 40px rgba(255, 77, 109, 0.2); }
+            50% { box-shadow: 0 0 30px rgba(255, 77, 109, 0.7), 0 0 60px rgba(255, 77, 109, 0.35), 0 0 80px rgba(255, 77, 109, 0.15); }
+        }
+
+        #yesBtn:hover {
+            transform: scale(1.08);
+            box-shadow: 0 0 35px rgba(255, 77, 109, 0.7), 0 0 70px rgba(255, 77, 109, 0.3);
+        }
+
+        #noBtn {
+            background: rgba(60, 50, 50, 0.6);
+            color: rgba(200, 180, 180, 0.7);
+            border: 1px solid rgba(150, 130, 130, 0.3);
+            backdrop-filter: blur(4px);
+            font-size: 1rem;
+            padding: 12px 32px;
+        }
+
+        #noBtn:hover {
+            background: rgba(80, 60, 60, 0.7);
+        }
+
+        /* ===== CELEBRATION ===== */
+
         .celebration-item {
             position: fixed; pointer-events: none; z-index: 1000;
-            animation: burst 4s forwards;
+            font-size: var(--csize, 24px);
+            animation: burst var(--burst-duration, 3.5s) cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
         }
 
         @keyframes burst {
-            0% { transform: scale(0) rotate(0); opacity: 1; }
-            100% { transform: scale(1.5) rotate(720deg) translate(var(--x), var(--y)); opacity: 0; }
+            0% {
+                transform: scale(0) rotate(0deg);
+                opacity: 1;
+            }
+            30% {
+                transform: scale(1.2) rotate(var(--rot, 180deg));
+                opacity: 1;
+            }
+            100% {
+                transform: scale(0.5) rotate(var(--rot-end, 720deg)) translate(var(--x), var(--y));
+                opacity: 0;
+            }
         }
+
+        /* Petal rain for celebration */
+        .petal-rain {
+            position: fixed; pointer-events: none; z-index: 999;
+            animation: petal-fall var(--petal-duration, 4s) ease-in forwards;
+            opacity: 0.85;
+        }
+
+        @keyframes petal-fall {
+            0% { transform: translateY(-20px) rotate(0deg) scale(1); opacity: 0; }
+            10% { opacity: 0.85; }
+            100% { transform: translateY(110vh) rotate(var(--petal-rot, 720deg)) scale(0.6); opacity: 0; }
+        }
+
+        /* ===== INSTRUCTION TEXT ===== */
 
         #instruction {
-            position: absolute; bottom: 5%; width: 100%; text-align: center;
-            color: rgba(255,255,255,0.7); font-size: 1.1rem;
-            animation: pulse 2s infinite;
+            position: absolute; bottom: 6%; width: 100%; text-align: center;
+            color: rgba(255, 230, 240, 0.7);
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.2rem;
+            font-style: italic;
+            letter-spacing: 0.1em;
+            z-index: 30;
+            animation: instruction-pulse 2.5s ease-in-out infinite;
+            text-shadow: 0 0 10px rgba(255, 200, 220, 0.3);
         }
 
-        @keyframes pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
+        @keyframes instruction-pulse {
+            0%, 100% { opacity: 0.3; transform: translateY(0); }
+            50% { opacity: 0.9; transform: translateY(-2px); }
+        }
+
+        /* Tap counter indicator */
+        #tap-indicator {
+            position: absolute; bottom: 2%; width: 100%;
+            display: flex; justify-content: center; gap: 10px;
+            z-index: 30;
+        }
+
+        .tap-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.5s ease;
+        }
+
+        .tap-dot.filled {
+            background: rgba(255, 200, 220, 0.8);
+            border-color: rgba(255, 150, 180, 0.6);
+            box-shadow: 0 0 8px rgba(255, 150, 180, 0.5);
+        }
+
+        /* ===== FINAL MESSAGE ===== */
+
+        #final-message {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            display: none; flex-direction: column;
+            justify-content: center; align-items: center;
+            z-index: 35; opacity: 0;
+            transition: opacity 2s ease;
+        }
+
+        .final-title {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: clamp(2rem, 7vw, 4.5rem);
+            color: #fff;
+            text-shadow:
+                0 0 30px rgba(255, 215, 0, 0.7),
+                0 0 60px rgba(255, 215, 0, 0.4),
+                0 0 100px rgba(255, 150, 200, 0.3);
+            margin-bottom: 15px;
+            animation: final-glow 2s ease-in-out infinite;
+        }
+
+        @keyframes final-glow {
+            0%, 100% { text-shadow: 0 0 30px rgba(255, 215, 0, 0.7), 0 0 60px rgba(255, 215, 0, 0.4); }
+            50% { text-shadow: 0 0 50px rgba(255, 215, 0, 0.9), 0 0 100px rgba(255, 215, 0, 0.5), 0 0 150px rgba(255, 100, 150, 0.3); }
+        }
+
+        .final-subtitle {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(1rem, 3vw, 1.6rem);
+            color: rgba(255, 220, 230, 0.9);
+            font-style: italic;
+            letter-spacing: 0.1em;
+            text-shadow: 0 0 10px rgba(255, 150, 180, 0.5);
+        }
+
+        /* Warm overlay that intensifies on celebration */
+        #warm-wash {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(ellipse at 70% 60%, rgba(255, 100, 40, 0.0), transparent);
+            pointer-events: none; z-index: 4;
+            transition: background 2s ease;
+        }
+
+        /* Screen flash for shatter moment */
+        #flash {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: white; opacity: 0; pointer-events: none; z-index: 50;
+            transition: opacity 0.15s ease;
+        }
     </style>
 </head>
 <body>
 
     <div id="stage">
-        <div id="fire-overlay"></div>
-        
+        <!-- Dual backgrounds for crossfade -->
+        <div id="bg-without-glass" class="bg-layer"></div>
+        <div id="bg-with-glass" class="bg-layer"></div>
+
+        <!-- Atmospheric overlays -->
+        <div id="vignette"></div>
+        <div id="fire-glow-ambient"></div>
+        <div id="fire-overlay">
+            <div id="fire-flicker-1" class="fire-flicker"></div>
+            <div id="fire-flicker-2" class="fire-flicker"></div>
+            <div id="fire-flicker-3" class="fire-flicker"></div>
+        </div>
+        <canvas id="fire-embers"></canvas>
+        <div id="warm-wash"></div>
+
+        <!-- Rose glow -->
+        <div id="rose-glow"></div>
+
+        <!-- Glass cloche interaction zone -->
         <div id="cloche-hitbox">
             <div id="magic-glow"></div>
-            <div id="cracks-1" class="cracks" style="transform: scale(0.9) rotate(5deg);"></div>
-            <div id="cracks-2" class="cracks" style="transform: scale(0.95) rotate(-10deg);"></div>
+
+            <!-- SVG light cracks -->
+            <div id="crack-1" class="crack-line">
+                <svg viewBox="0 0 90 120"><path d="M45 0 L38 30 L50 50 L35 80 L42 120"/></svg>
+            </div>
+            <div id="crack-2" class="crack-line">
+                <svg viewBox="0 0 80 100"><path d="M10 20 L35 35 L25 60 L45 80 L55 100"/></svg>
+            </div>
+            <div id="crack-3" class="crack-line">
+                <svg viewBox="0 0 100 140"><path d="M60 0 L50 40 L70 70 L55 100 L65 140"/></svg>
+            </div>
         </div>
 
+        <!-- Instruction text -->
         <div id="instruction">Touch the glass to break the spell...</div>
 
+        <!-- Tap progress dots -->
+        <div id="tap-indicator">
+            <div class="tap-dot" id="dot-1"></div>
+            <div class="tap-dot" id="dot-2"></div>
+            <div class="tap-dot" id="dot-3"></div>
+        </div>
+
+        <!-- Proposal UI -->
         <div id="proposal-ui">
             <h1 class="valentine-text">Will you be my Valentine?</h1>
             <div class="btn-container">
@@ -129,101 +547,468 @@
                 <button id="noBtn" class="btn">No</button>
             </div>
         </div>
+
+        <!-- Final celebration message -->
+        <div id="final-message">
+            <div class="final-title">Happy Valentine's Day!</div>
+            <div class="final-subtitle">You make my heart glow brighter than any enchantment.</div>
+        </div>
+
+        <!-- Screen flash -->
+        <div id="flash"></div>
     </div>
 
-    <audio id="fireSound" loop><source src="fire_crackle.mp3" type="audio/mpeg"></audio>
-    <audio id="music" loop><source src="romantic_melody.mp3" type="audio/mpeg"></audio>
-    <audio id="chime"><source src="chime.mp3" type="audio/mpeg"></audio>
+    <!-- Audio (external files - silent fallback if missing) -->
+    <audio id="fireSound" loop preload="auto"><source src="fire_crackle.mp3" type="audio/mpeg"></audio>
+    <audio id="music" loop preload="auto"><source src="romantic_melody.mp3" type="audio/mpeg"></audio>
+    <audio id="chime" preload="auto"><source src="chime.mp3" type="audio/mpeg"></audio>
 
     <script>
-        let clicks = 0;
-        const hitbox = document.getElementById('cloche-hitbox');
-        const glow = document.getElementById('magic-glow');
-        const ui = document.getElementById('proposal-ui');
-        const instruction = document.getElementById('instruction');
-        const noBtn = document.getElementById('noBtn');
-        const yesBtn = document.getElementById('yesBtn');
+    (() => {
+        'use strict';
 
-        // Audio controls
-        function playInteractionSounds() {
-            document.getElementById('fireSound').play();
-            document.getElementById('music').play();
+        // === ELEMENTS ===
+        const stage         = document.getElementById('stage');
+        const bgWithGlass   = document.getElementById('bg-with-glass');
+        const hitbox        = document.getElementById('cloche-hitbox');
+        const magicGlow     = document.getElementById('magic-glow');
+        const roseGlow      = document.getElementById('rose-glow');
+        const instruction   = document.getElementById('instruction');
+        const tapIndicator  = document.getElementById('tap-indicator');
+        const proposalUI    = document.getElementById('proposal-ui');
+        const finalMessage  = document.getElementById('final-message');
+        const warmWash      = document.getElementById('warm-wash');
+        const flash         = document.getElementById('flash');
+        const noBtn         = document.getElementById('noBtn');
+        const yesBtn        = document.getElementById('yesBtn');
+        const embersCanvas  = document.getElementById('fire-embers');
+        const embersCtx     = embersCanvas.getContext('2d');
+
+        const cracks = [
+            document.getElementById('crack-1'),
+            document.getElementById('crack-2'),
+            document.getElementById('crack-3')
+        ];
+        const dots = [
+            document.getElementById('dot-1'),
+            document.getElementById('dot-2'),
+            document.getElementById('dot-3')
+        ];
+
+        let clicks = 0;
+        let shattered = false;
+        let celebrated = false;
+
+        // === AUDIO HELPERS ===
+        function safePlay(id) {
+            const el = document.getElementById(id);
+            if (el) el.play().catch(() => {});
         }
 
-        hitbox.addEventListener('click', () => {
-            clicks++;
-            if (clicks === 1) playInteractionSounds();
-            
-            // Reaction
-            document.getElementById('chime').play();
-            glow.style.opacity = (clicks * 0.3);
-            glow.style.transform = `scale(${1 + (clicks * 0.1)})`;
+        function playInteractionSounds() {
+            const fire = document.getElementById('fireSound');
+            const music = document.getElementById('music');
+            if (fire) { fire.volume = 0.4; fire.play().catch(() => {}); }
+            if (music) { music.volume = 0.3; music.play().catch(() => {}); }
+        }
 
-            if (clicks === 1) document.getElementById('cracks-1').style.opacity = "0.4";
-            if (clicks === 2) document.getElementById('cracks-2').style.opacity = "0.7";
+        // === FIRE EMBERS (Canvas) ===
+        const embers = [];
 
-            if (clicks === 3) {
-                // PHASE 2: THE REVEAL
-                hitbox.style.display = 'none';
-                instruction.style.display = 'none';
-                ui.style.display = 'flex';
-                setTimeout(() => { ui.style.opacity = '1'; }, 100);
-                
-                // Dissolve burst
-                createBurst(window.innerWidth/2, window.innerHeight/2, 50);
+        function resizeEmbers() {
+            embersCanvas.width = window.innerWidth;
+            embersCanvas.height = window.innerHeight;
+        }
+        resizeEmbers();
+        window.addEventListener('resize', resizeEmbers);
+
+        class Ember {
+            constructor() {
+                this.reset();
             }
+            reset() {
+                // Embers originate from fireplace area (right-center)
+                this.x = window.innerWidth * (0.65 + Math.random() * 0.15);
+                this.y = window.innerHeight * (0.5 + Math.random() * 0.2);
+                this.vx = (Math.random() - 0.5) * 0.6;
+                this.vy = -(Math.random() * 1.2 + 0.4);
+                this.size = Math.random() * 3 + 1;
+                this.life = 1;
+                this.decay = Math.random() * 0.008 + 0.004;
+                this.hue = Math.random() * 40 + 15; // orange-yellow range
+            }
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.vx += (Math.random() - 0.5) * 0.1; // wandering
+                this.vy -= 0.01; // slight upward acceleration
+                this.life -= this.decay;
+                if (this.life <= 0) this.reset();
+            }
+            draw(ctx) {
+                ctx.globalAlpha = this.life * 0.8;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = `hsl(${this.hue}, 100%, ${50 + this.life * 30}%)`;
+                ctx.fill();
+
+                // Soft glow
+                ctx.globalAlpha = this.life * 0.3;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size * 3, 0, Math.PI * 2);
+                ctx.fillStyle = `hsl(${this.hue}, 100%, 70%)`;
+                ctx.fill();
+            }
+        }
+
+        // Create ember particles
+        for (let i = 0; i < 25; i++) {
+            const e = new Ember();
+            e.life = Math.random(); // stagger
+            embers.push(e);
+        }
+
+        function animateEmbers() {
+            embersCtx.clearRect(0, 0, embersCanvas.width, embersCanvas.height);
+            for (const e of embers) {
+                e.update();
+                e.draw(embersCtx);
+            }
+            embersCtx.globalAlpha = 1;
+            requestAnimationFrame(animateEmbers);
+        }
+        animateEmbers();
+
+        // === SNOW ===
+        function createSnowflake() {
+            const snow = document.createElement('div');
+            snow.className = 'snowflake';
+            const size = Math.random() * 4 + 2;
+            const drift = (Math.random() - 0.5) * 40;
+            snow.style.setProperty('--size', size + 'px');
+            snow.style.setProperty('--drift', drift + 'px');
+            snow.style.setProperty('--duration', (Math.random() * 4 + 3) + 's');
+            snow.style.setProperty('--opacity', (Math.random() * 0.5 + 0.2).toString());
+            snow.style.left = (Math.random() * 38) + 'vw'; // left side (window area)
+            stage.appendChild(snow);
+            const dur = parseFloat(snow.style.getPropertyValue('--duration')) * 1000;
+            setTimeout(() => snow.remove(), dur + 200);
+        }
+
+        setInterval(createSnowflake, 300);
+        // Seed a few immediately
+        for (let i = 0; i < 5; i++) setTimeout(createSnowflake, i * 60);
+
+        // === FLOATING PARTICLES INSIDE CLOCHE ===
+        const clocheParticleContainer = document.createElement('div');
+        clocheParticleContainer.id = 'cloche-particles';
+        clocheParticleContainer.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:7;overflow:hidden;';
+        stage.appendChild(clocheParticleContainer);
+
+        function createClocheParticle() {
+            if (shattered) return;
+            const p = document.createElement('div');
+            const isStar = Math.random() > 0.4;
+            p.className = 'cloche-particle ' + (isStar ? 'star' : 'petal');
+
+            // Center around cloche area
+            const cx = 50; // percent
+            const cy = 42;
+            const spread = 6;
+
+            const startX = cx + (Math.random() - 0.5) * spread;
+            const startY = cy + (Math.random() - 0.5) * spread * 0.8;
+            const psize = Math.random() * 5 + 3;
+
+            p.style.left = startX + '%';
+            p.style.top = startY + '%';
+            p.style.setProperty('--psize', psize + 'px');
+            p.style.setProperty('--float-duration', (Math.random() * 4 + 4) + 's');
+            p.style.setProperty('--dx', (Math.random() - 0.5) * 30 + 'px');
+            p.style.setProperty('--dy', -(Math.random() * 40 + 10) + 'px');
+            p.style.setProperty('--dx2', (Math.random() - 0.5) * 20 + 'px');
+            p.style.setProperty('--dy2', -(Math.random() * 60 + 20) + 'px');
+            p.style.setProperty('--max-opacity', (Math.random() * 0.4 + 0.4).toString());
+            p.style.setProperty('--rotation', Math.random() * 360 + 'deg');
+            p.style.animationDelay = (Math.random() * 2) + 's';
+
+            clocheParticleContainer.appendChild(p);
+            const dur = parseFloat(p.style.getPropertyValue('--float-duration')) * 1000 + 2000;
+            setTimeout(() => p.remove(), dur + 500);
+        }
+
+        setInterval(createClocheParticle, 500);
+        for (let i = 0; i < 8; i++) setTimeout(createClocheParticle, i * 100);
+
+        // === CLOCHE INTERACTION ===
+        hitbox.addEventListener('click', handleTap);
+        hitbox.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            handleTap();
         });
 
-        // "No" button runaway logic
+        function handleTap() {
+            if (shattered) return;
+            clicks++;
+
+            // Play sounds on first interaction
+            if (clicks === 1) playInteractionSounds();
+
+            // Chime feedback
+            const chime = document.getElementById('chime');
+            if (chime) {
+                chime.currentTime = 0;
+                chime.play().catch(() => {});
+            }
+
+            // Intensify glow
+            magicGlow.style.opacity = Math.min(clicks * 0.25, 0.9).toString();
+            magicGlow.style.transform = `scale(${1 + clicks * 0.08})`;
+
+            // Rose glow intensifies
+            roseGlow.style.animationDuration = Math.max(2.5 - clicks * 0.5, 0.8) + 's';
+
+            // Reveal cracks progressively
+            if (clicks >= 1 && clicks <= 3) {
+                const crack = cracks[clicks - 1];
+                crack.style.opacity = '1';
+                crack.classList.add('visible');
+                dots[clicks - 1].classList.add('filled');
+            }
+
+            // Tap 1 & 2: small particle bursts for feedback
+            if (clicks < 3) {
+                const rect = hitbox.getBoundingClientRect();
+                const cx = rect.left + rect.width / 2;
+                const cy = rect.top + rect.height / 2;
+                createBurst(cx, cy, 8, true);
+            }
+
+            // TAP 3: SHATTER!
+            if (clicks >= 3) {
+                shatter();
+            }
+        }
+
+        // === GLASS SHATTER ===
+        function shatter() {
+            shattered = true;
+
+            // White flash
+            flash.style.opacity = '0.6';
+            setTimeout(() => { flash.style.opacity = '0'; }, 200);
+
+            // Remove cloche particles
+            clocheParticleContainer.innerHTML = '';
+
+            // Create glass shard explosion
+            const rect = hitbox.getBoundingClientRect();
+            const cx = rect.left + rect.width / 2;
+            const cy = rect.top + rect.height / 2;
+
+            for (let i = 0; i < 30; i++) {
+                createGlassShard(cx, cy);
+            }
+
+            // Hide hitbox and instruction
+            hitbox.style.transition = 'opacity 0.3s';
+            hitbox.style.opacity = '0';
+            setTimeout(() => { hitbox.style.display = 'none'; }, 300);
+
+            instruction.style.transition = 'opacity 0.5s';
+            instruction.style.opacity = '0';
+            setTimeout(() => { instruction.style.display = 'none'; }, 500);
+
+            tapIndicator.style.transition = 'opacity 0.5s';
+            tapIndicator.style.opacity = '0';
+
+            // Crossfade background: glass -> no glass
+            bgWithGlass.style.opacity = '0';
+
+            // Rose glow stays and brightens (rose is now free)
+            roseGlow.style.animation = 'none';
+            roseGlow.style.opacity = '0.9';
+            roseGlow.style.transform = 'translate(-50%, -40%) scale(1.3)';
+            roseGlow.style.transition = 'opacity 2s, transform 2s';
+
+            // Star/petal burst from shatter point
+            createBurst(cx, cy, 40, false);
+
+            // Show proposal after brief pause
+            setTimeout(() => {
+                proposalUI.style.display = 'flex';
+                requestAnimationFrame(() => {
+                    proposalUI.style.opacity = '1';
+                });
+            }, 800);
+        }
+
+        function createGlassShard(originX, originY) {
+            const shard = document.createElement('div');
+            shard.className = 'glass-shard';
+
+            // Each shard is a small polygon of "glass"
+            const size = Math.random() * 20 + 8;
+            const points = [];
+            const verts = Math.floor(Math.random() * 3) + 3;
+            for (let i = 0; i < verts; i++) {
+                const angle = (i / verts) * Math.PI * 2;
+                const r = size * (0.5 + Math.random() * 0.5);
+                points.push(`${50 + Math.cos(angle) * r}% ${50 + Math.sin(angle) * r}%`);
+            }
+
+            shard.style.cssText = `
+                position: fixed;
+                left: ${originX}px; top: ${originY}px;
+                width: ${size * 2}px; height: ${size * 2}px;
+                background: linear-gradient(
+                    ${Math.random() * 360}deg,
+                    rgba(200, 220, 255, 0.7),
+                    rgba(255, 255, 255, 0.3),
+                    rgba(180, 200, 240, 0.5)
+                );
+                clip-path: polygon(${points.join(', ')});
+                --sx: ${(Math.random() - 0.5) * 500}px;
+                --sy: ${(Math.random() - 0.5) * 500}px;
+                --sr: ${Math.random() * 720 - 360}deg;
+                --shard-duration: ${Math.random() * 0.8 + 0.8}s;
+                z-index: 50;
+            `;
+
+            document.body.appendChild(shard);
+            requestAnimationFrame(() => shard.classList.add('shatter'));
+            setTimeout(() => shard.remove(), 2000);
+        }
+
+        // === CELEBRATION BURST ===
+        function createBurst(originX, originY, count, small) {
+            const types = ['🌹', '✨', '💖', '⭐', '🌸', '💫'];
+            for (let i = 0; i < count; i++) {
+                const p = document.createElement('div');
+                p.innerHTML = types[Math.floor(Math.random() * types.length)];
+                p.className = 'celebration-item';
+
+                const angle = (Math.random() * Math.PI * 2);
+                const distance = small ? (Math.random() * 100 + 50) : (Math.random() * 400 + 100);
+
+                p.style.left = originX + 'px';
+                p.style.top = originY + 'px';
+                p.style.setProperty('--x', Math.cos(angle) * distance + 'px');
+                p.style.setProperty('--y', Math.sin(angle) * distance + 'px');
+                p.style.setProperty('--rot', (Math.random() * 360) + 'deg');
+                p.style.setProperty('--rot-end', (Math.random() * 720) + 'deg');
+                p.style.setProperty('--csize', (small ? (Math.random() * 12 + 10) : (Math.random() * 20 + 16)) + 'px');
+                p.style.setProperty('--burst-duration', (small ? '1.5s' : (Math.random() * 2 + 2) + 's'));
+
+                document.body.appendChild(p);
+                const dur = parseFloat(p.style.getPropertyValue('--burst-duration')) * 1000;
+                setTimeout(() => p.remove(), dur + 100);
+            }
+        }
+
+        // === PETAL RAIN ===
+        function startPetalRain(duration) {
+            const petals = ['🌹', '🌸', '💖', '🪻', '✨', '⭐'];
+            const interval = setInterval(() => {
+                for (let i = 0; i < 3; i++) {
+                    const p = document.createElement('div');
+                    p.innerHTML = petals[Math.floor(Math.random() * petals.length)];
+                    p.className = 'petal-rain';
+                    p.style.left = Math.random() * 100 + 'vw';
+                    p.style.top = '-30px';
+                    p.style.fontSize = (Math.random() * 18 + 14) + 'px';
+                    p.style.setProperty('--petal-duration', (Math.random() * 3 + 3) + 's');
+                    p.style.setProperty('--petal-rot', (Math.random() * 720) + 'deg');
+                    document.body.appendChild(p);
+                    setTimeout(() => p.remove(), 7000);
+                }
+            }, 150);
+            setTimeout(() => clearInterval(interval), duration);
+        }
+
+        // === "NO" BUTTON RUNAWAY ===
         function moveNo() {
-            const x = Math.random() * (window.innerWidth - 100);
-            const y = Math.random() * (window.innerHeight - 100);
+            const margin = 20;
+            const w = noBtn.offsetWidth;
+            const h = noBtn.offsetHeight;
+            const x = Math.random() * (window.innerWidth - w - margin * 2) + margin;
+            const y = Math.random() * (window.innerHeight - h - margin * 2) + margin;
             noBtn.style.position = 'fixed';
             noBtn.style.left = x + 'px';
             noBtn.style.top = y + 'px';
+            noBtn.style.zIndex = '100';
+            noBtn.style.transition = 'left 0.2s, top 0.2s';
         }
-        noBtn.addEventListener('mouseover', moveNo);
-        noBtn.addEventListener('touchstart', (e) => { e.preventDefault(); moveNo(); });
 
-        // Final Celebration
-        yesBtn.addEventListener('click', () => {
-            noBtn.style.display = 'none';
-            document.getElementById('fire-overlay').style.animationDuration = "0.05s"; // Fire flares up
-            createBurst(window.innerWidth/2, window.innerHeight/2, 150);
-            
-            setTimeout(() => {
-                ui.innerHTML = `<h1 style="font-size: 4rem; text-shadow: 0 0 20px gold;">Yay! ❤️</h1>
-                                <p style="color:white; font-size: 1.5rem;">I knew you'd say yes (eventually)!</p>`;
-            }, 500);
+        noBtn.addEventListener('mouseover', moveNo);
+        noBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            moveNo();
         });
 
-        function createBurst(originX, originY, count) {
-            for (let i = 0; i < count; i++) {
-                const p = document.createElement('div');
-                const type = ['🌹', '✨', '💖', '⭐'][Math.floor(Math.random() * 4)];
-                p.innerHTML = type;
-                p.className = 'celebration-item';
-                p.style.left = originX + 'px';
-                p.style.top = originY + 'px';
-                p.style.setProperty('--x', (Math.random() - 0.5) * 1000 + 'px');
-                p.style.setProperty('--y', (Math.random() - 0.5) * 1000 + 'px');
-                document.body.appendChild(p);
-                setTimeout(() => p.remove(), 4000);
-            }
-        }
+        // === YES BUTTON: CELEBRATION ===
+        yesBtn.addEventListener('click', () => {
+            if (celebrated) return;
+            celebrated = true;
 
-        // Add snow outside
-        setInterval(() => {
-            const snow = document.createElement('div');
-            snow.innerHTML = '•';
-            snow.className = 'snowflake';
-            snow.style.left = (Math.random() * 40) + 'vw'; // Only on left side (window)
-            snow.style.opacity = Math.random();
-            snow.style.animationDuration = (Math.random() * 3 + 2) + 's';
-            document.body.appendChild(snow);
-            setTimeout(() => snow.remove(), 5000);
-        }, 200);
+            // Hide buttons and question
+            proposalUI.style.transition = 'opacity 0.5s';
+            proposalUI.style.opacity = '0';
+            setTimeout(() => { proposalUI.style.display = 'none'; }, 600);
+
+            // Runaway No vanishes
+            noBtn.style.display = 'none';
+
+            // Fire flares up
+            const flickers = document.querySelectorAll('.fire-flicker');
+            flickers.forEach(f => {
+                f.style.animationDuration = '0.05s';
+            });
+            document.getElementById('fire-glow-ambient').style.background =
+                'radial-gradient(ellipse at 75% 65%, rgba(255, 120, 40, 0.25) 0%, transparent 55%),' +
+                'radial-gradient(ellipse at 70% 70%, rgba(255, 80, 20, 0.15) 0%, transparent 45%)';
+
+            // Warm wash
+            warmWash.style.background = 'radial-gradient(ellipse at 70% 60%, rgba(255, 100, 40, 0.12), transparent)';
+
+            // More embers
+            for (let i = 0; i < 30; i++) {
+                const e = new Ember();
+                e.vy = -(Math.random() * 2 + 1);
+                e.size = Math.random() * 4 + 2;
+                embers.push(e);
+            }
+
+            // Massive burst from center
+            const cx = window.innerWidth / 2;
+            const cy = window.innerHeight / 2;
+            createBurst(cx, cy, 80, false);
+            setTimeout(() => createBurst(cx, cy, 60, false), 400);
+            setTimeout(() => createBurst(cx, cy, 40, false), 800);
+
+            // Petal rain
+            startPetalRain(8000);
+
+            // Music swell (increase volume)
+            const music = document.getElementById('music');
+            if (music) {
+                let vol = music.volume;
+                const swell = setInterval(() => {
+                    vol = Math.min(vol + 0.05, 0.9);
+                    music.volume = vol;
+                    if (vol >= 0.9) clearInterval(swell);
+                }, 100);
+            }
+
+            // Show final message
+            setTimeout(() => {
+                finalMessage.style.display = 'flex';
+                requestAnimationFrame(() => {
+                    finalMessage.style.opacity = '1';
+                });
+            }, 1000);
+        });
+    })();
     </script>
 </body>
 </html>
-
