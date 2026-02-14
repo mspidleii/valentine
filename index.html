@@ -8,7 +8,7 @@
         :root {
             --rose-red: #ff4d6d;
             --gold: #ffd700;
-            --glass: rgba(255, 255, 255, 0.2);
+            --glass-sheen: rgba(255, 255, 255, 0.2);
         }
 
         body, html {
@@ -20,65 +20,93 @@
 
         #main-card {
             display: flex; flex-direction: column; align-items: center; text-align: center;
-            z-index: 10; /* Keep everything above background effects */
+            z-index: 10;
         }
 
+        /* The Glass Dome from your Reference */
         .dome-wrapper {
-            position: relative; width: 220px; height: 320px; margin-bottom: 20px;
-            pointer-events: none; /* This ensures the glass never blocks button clicks */
+            position: relative; width: 240px; height: 340px; margin-bottom: 20px;
+            pointer-events: none;
         }
 
         .glass-dome {
             position: absolute; width: 100%; height: 100%;
-            border: 2px solid var(--glass);
-            border-radius: 110px 110px 20px 20px;
-            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 60%);
-            box-shadow: inset 0 0 20px rgba(255,255,255,0.1), 0 0 40px rgba(255,77,109,0.2);
-            transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.5s;
+            border: 2px solid var(--glass-sheen);
+            border-radius: 120px 120px 30px 30px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 60%);
+            box-shadow: inset 0 0 30px rgba(255,255,255,0.1), 0 0 50px rgba(255,77,109,0.15);
+            transition: all 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 2;
+        }
+
+        /* The floating sparkles around the rose */
+        .sparkles {
+            position: absolute; width: 100%; height: 100%;
+            background: radial-gradient(circle, rgba(255,255,255,0.4) 1px, transparent 1px);
+            background-size: 30px 30px;
+            opacity: 0.3; animation: shimmer 4s infinite linear;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-30px); }
         }
 
         .shattered {
-            transform: scale(2) rotate(15deg) translateY(-100px);
+            transform: scale(2.5) rotate(20deg) translateY(-150px);
             opacity: 0;
         }
 
         .rose-container {
-            font-size: 100px; position: absolute; top: 50%; left: 50%;
+            font-size: 110px; position: absolute; top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            filter: drop-shadow(0 0 20px var(--rose-red));
+            filter: drop-shadow(0 0 25px var(--rose-red));
             animation: float 4s infinite ease-in-out;
+            z-index: 1;
         }
 
         @keyframes float {
             0%, 100% { transform: translate(-50%, -50%) scale(1); }
-            50% { transform: translate(-50%, -55%) scale(1.05); }
+            50% { transform: translate(-50%, -58%) scale(1.08); }
         }
 
-        h1 { font-size: 1.8rem; text-shadow: 0 0 10px var(--gold); margin: 20px 0; pointer-events: none; }
+        h1 { 
+            font-size: 1.8rem; 
+            text-shadow: 0 0 15px var(--gold); 
+            margin: 30px 0; 
+            pointer-events: none;
+            font-weight: normal;
+        }
 
+        /* Button Container Logic */
         .btn-container {
-            display: flex; gap: 40px; height: 60px; align-items: center; justify-content: center;
-            width: 100%; position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 300px;
+            height: 80px;
+            position: relative;
         }
 
         .btn {
-            padding: 12px 30px; font-size: 1.2rem; border-radius: 50px; border: none;
-            cursor: pointer; font-weight: bold; transition: background 0.3s;
+            padding: 14px 35px; font-size: 1.3rem; border-radius: 50px; border: none;
+            cursor: pointer; font-weight: bold; transition: all 0.3s ease;
         }
 
         #yesBtn { 
             background: var(--rose-red); color: white; 
-            box-shadow: 0 0 20px var(--rose-red); 
-            z-index: 100; /* Highest priority */
+            box-shadow: 0 0 25px var(--rose-red); 
+            z-index: 100;
         }
 
         #noBtn { 
             background: #333; color: #999; 
-            position: absolute; /* Changed to absolute for initial placement */
-            z-index: 99; 
-            white-space: nowrap;
+            position: absolute;
+            left: 220px; /* Start far enough to the right to be visible */
+            z-index: 99;
         }
 
+        /* Animations for "Yes" click */
         .petal {
             position: fixed; top: -10%; font-size: 24px;
             user-select: none; pointer-events: none; z-index: 1000;
@@ -91,7 +119,7 @@
 
         #success-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.95); display: none;
+            background: rgba(0,0,0,0.97); display: none;
             flex-direction: column; align-items: center; justify-content: center; z-index: 9999;
         }
     </style>
@@ -100,7 +128,9 @@
 
     <div id="main-card">
         <div class="dome-wrapper">
-            <div id="dome" class="glass-dome"></div>
+            <div id="dome" class="glass-dome">
+                <div class="sparkles"></div>
+            </div>
             <div class="rose-container">🌹</div>
         </div>
         
@@ -113,9 +143,9 @@
     </div>
 
     <div id="success-overlay">
-        <h1 style="font-size: 3.5rem;">Yay! ❤️</h1>
-        <p style="font-size: 1.2rem;">The spell is broken!</p>
-        <div style="font-size: 50px; margin-top: 20px;">🥀✨👑</div>
+        <h1 style="font-size: 3.5rem; text-shadow: 0 0 20px var(--gold);">Yay! ❤️</h1>
+        <p style="font-size: 1.3rem; letter-spacing: 1px;">The spell is broken!</p>
+        <div style="font-size: 60px; margin-top: 30px; filter: drop-shadow(0 0 10px gold);">🌹✨👑</div>
     </div>
 
     <script>
@@ -125,8 +155,8 @@
         const success = document.getElementById('success-overlay');
 
         function moveButton() {
-            // Calculate usable area (preventing button from going off-screen)
-            const padding = 50;
+            // Expanded area to ensure it doesn't get stuck near the "Yes" button
+            const padding = 60;
             const maxX = window.innerWidth - noBtn.offsetWidth - padding;
             const maxY = window.innerHeight - noBtn.offsetHeight - padding;
             
@@ -138,41 +168,36 @@
             noBtn.style.top = `${randomY}px`;
         }
 
-        // Desktop: Escape on hover
+        // Interaction Listeners
         noBtn.addEventListener('mouseenter', moveButton);
-
-        // Mobile: Escape on touch (preventDefault stops the 'click' from ever happening)
         noBtn.addEventListener('touchstart', (e) => {
             e.preventDefault();
             moveButton();
         });
 
-        // Click handler for No (just in case)
-        noBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            moveButton();
-        });
-
         yesBtn.addEventListener('click', () => {
+            // 1. Shatter animation
             dome.classList.add('shattered');
             
-            // Generate flurry
-            for(let i=0; i<60; i++) {
-                setTimeout(createPetal, i * 80);
+            // 2. Petal Storm
+            for(let i=0; i<70; i++) {
+                setTimeout(createPetal, i * 60);
             }
 
+            // 3. Reveal final screen
             setTimeout(() => {
                 success.style.display = 'flex';
-            }, 1000);
+            }, 1200);
         });
 
         function createPetal() {
             const petal = document.createElement('div');
-            petal.innerHTML = Math.random() > 0.5 ? '🌹' : '✨';
+            const types = ['🌹', '🥀', '✨', '❤️'];
+            petal.innerHTML = types[Math.floor(Math.random() * types.length)];
             petal.className = 'petal';
             petal.style.left = Math.random() * 100 + 'vw';
-            petal.style.animationDuration = (Math.random() * 2 + 3) + 's';
-            petal.style.fontSize = (Math.random() * 20 + 10) + 'px';
+            petal.style.animationDuration = (Math.random() * 2 + 2) + 's';
+            petal.style.fontSize = (Math.random() * 25 + 15) + 'px';
             document.body.appendChild(petal);
             
             setTimeout(() => petal.remove(), 5000);
