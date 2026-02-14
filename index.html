@@ -20,11 +20,12 @@
 
         #main-card {
             display: flex; flex-direction: column; align-items: center; text-align: center;
+            z-index: 10; /* Keep everything above background effects */
         }
 
-        /* The Glass Dome */
         .dome-wrapper {
             position: relative; width: 220px; height: 320px; margin-bottom: 20px;
+            pointer-events: none; /* This ensures the glass never blocks button clicks */
         }
 
         .glass-dome {
@@ -33,12 +34,12 @@
             border-radius: 110px 110px 20px 20px;
             background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 60%);
             box-shadow: inset 0 0 20px rgba(255,255,255,0.1), 0 0 40px rgba(255,77,109,0.2);
-            transition: transform 0.3s, opacity 0.5s;
-            z-index: 2;
+            transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.5s;
         }
 
         .shattered {
-            transform: scale(1.5) rotate(10deg); opacity: 0; pointer-events: none;
+            transform: scale(2) rotate(15deg) translateY(-100px);
+            opacity: 0;
         }
 
         .rose-container {
@@ -46,7 +47,6 @@
             transform: translate(-50%, -50%);
             filter: drop-shadow(0 0 20px var(--rose-red));
             animation: float 4s infinite ease-in-out;
-            z-index: 1;
         }
 
         @keyframes float {
@@ -54,30 +54,34 @@
             50% { transform: translate(-50%, -55%) scale(1.05); }
         }
 
-        h1 { font-size: 1.8rem; text-shadow: 0 0 10px var(--gold); margin: 20px 0; }
+        h1 { font-size: 1.8rem; text-shadow: 0 0 10px var(--gold); margin: 20px 0; pointer-events: none; }
 
-        /* Buttons */
         .btn-container {
             display: flex; gap: 40px; height: 60px; align-items: center; justify-content: center;
-            width: 100vw; position: relative;
+            width: 100%; position: relative;
         }
 
         .btn {
             padding: 12px 30px; font-size: 1.2rem; border-radius: 50px; border: none;
-            cursor: pointer; font-weight: bold; transition: 0.2s;
+            cursor: pointer; font-weight: bold; transition: background 0.3s;
         }
 
-        #yesBtn { background: var(--rose-red); color: white; box-shadow: 0 0 20px var(--rose-red); z-index: 5; }
+        #yesBtn { 
+            background: var(--rose-red); color: white; 
+            box-shadow: 0 0 20px var(--rose-red); 
+            z-index: 100; /* Highest priority */
+        }
 
         #noBtn { 
-            background: #333; color: #999; position: relative; 
-            transition: left 0.2s ease, top 0.2s ease;
+            background: #333; color: #999; 
+            position: absolute; /* Changed to absolute for initial placement */
+            z-index: 99; 
+            white-space: nowrap;
         }
 
-        /* Petal Flurry */
         .petal {
             position: fixed; top: -10%; font-size: 24px;
-            user-select: none; pointer-events: none; z-index: 100;
+            user-select: none; pointer-events: none; z-index: 1000;
             animation: fall linear forwards;
         }
 
@@ -85,11 +89,10 @@
             to { transform: translateY(110vh) rotate(360deg); opacity: 0; }
         }
 
-        /* Success screen overlay */
         #success-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9); display: none;
-            flex-direction: column; align-items: center; justify-content: center; z-index: 1000;
+            background: rgba(0,0,0,0.95); display: none;
+            flex-direction: column; align-items: center; justify-content: center; z-index: 9999;
         }
     </style>
 </head>
@@ -101,7 +104,7 @@
             <div class="rose-container">🌹</div>
         </div>
         
-        <h1 id="question">Will you be my Valentine?</h1>
+        <h1>Will you be my Valentine?</h1>
 
         <div class="btn-container">
             <button id="yesBtn" class="btn">Yes</button>
@@ -121,9 +124,9 @@
         const dome = document.getElementById('dome');
         const success = document.getElementById('success-overlay');
 
-        // The "Runaway" Logic
-        function escape(e) {
-            const padding = 20;
+        function moveButton() {
+            // Calculate usable area (preventing button from going off-screen)
+            const padding = 50;
             const maxX = window.innerWidth - noBtn.offsetWidth - padding;
             const maxY = window.innerHeight - noBtn.offsetHeight - padding;
             
@@ -131,39 +134,45 @@
             const randomY = Math.max(padding, Math.floor(Math.random() * maxY));
 
             noBtn.style.position = "fixed";
-            noBtn.style.left = randomX + "px";
-            noBtn.style.top = randomY + "px";
+            noBtn.style.left = `${randomX}px`;
+            noBtn.style.top = `${randomY}px`;
         }
 
-        noBtn.addEventListener('mouseover', escape);
+        // Desktop: Escape on hover
+        noBtn.addEventListener('mouseenter', moveButton);
+
+        // Mobile: Escape on touch (preventDefault stops the 'click' from ever happening)
         noBtn.addEventListener('touchstart', (e) => {
             e.preventDefault();
-            escape();
+            moveButton();
         });
 
-        // The "Yes" Logic
+        // Click handler for No (just in case)
+        noBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            moveButton();
+        });
+
         yesBtn.addEventListener('click', () => {
-            // Shatter the glass
             dome.classList.add('shattered');
             
-            // Start the petal flurry
-            for(let i=0; i<50; i++) {
-                setTimeout(createPetal, i * 100);
+            // Generate flurry
+            for(let i=0; i<60; i++) {
+                setTimeout(createPetal, i * 80);
             }
 
-            // Show success screen after a short delay
             setTimeout(() => {
                 success.style.display = 'flex';
-            }, 1500);
+            }, 1000);
         });
 
         function createPetal() {
             const petal = document.createElement('div');
-            petal.innerHTML = '🌹';
+            petal.innerHTML = Math.random() > 0.5 ? '🌹' : '✨';
             petal.className = 'petal';
             petal.style.left = Math.random() * 100 + 'vw';
-            petal.style.animationDuration = (Math.random() * 3 + 2) + 's';
-            petal.style.opacity = Math.random();
+            petal.style.animationDuration = (Math.random() * 2 + 3) + 's';
+            petal.style.fontSize = (Math.random() * 20 + 10) + 'px';
             document.body.appendChild(petal);
             
             setTimeout(() => petal.remove(), 5000);
