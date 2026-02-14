@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Special Message</title>
+    <style>
+        :root {
+            --rose-red: #e63946;
+            --gold: #ffb703;
+            --glass: rgba(255, 255, 255, 0.15);
+        }
+
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle, #1a0105 0%, #000000 100%);
+            color: white;
+            font-family: 'Georgia', serif;
+            overflow: hidden;
+            touch-action: manipulation;
+        }
+
+        /* The Enchanted Rose Container */
+        .dome-container {
+            position: relative;
+            width: 200px;
+            height: 300px;
+            border: 2px solid var(--glass);
+            border-radius: 100px 100px 10px 10px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 50%);
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .rose {
+            font-size: 80px;
+            filter: drop-shadow(0 0 15px var(--rose-red));
+            animation: pulse 3s infinite ease-in-out;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.05); opacity: 1; filter: drop-shadow(0 0 25px var(--rose-red)); }
+        }
+
+        .petal {
+            position: absolute;
+            bottom: 20px;
+            font-size: 20px;
+            opacity: 0.6;
+            animation: fall 5s infinite linear;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 1.8rem;
+            text-shadow: 0 0 10px var(--gold);
+            margin-bottom: 40px;
+            padding: 0 20px;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 20px;
+            position: relative;
+            width: 100%;
+            justify-content: center;
+            height: 50px;
+        }
+
+        button {
+            padding: 12px 25px;
+            font-size: 1.2rem;
+            border-radius: 25px;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.2s;
+            font-family: 'Georgia', serif;
+        }
+
+        #yesBtn {
+            background-color: var(--rose-red);
+            color: white;
+            box-shadow: 0 0 15px var(--rose-red);
+            z-index: 10;
+        }
+
+        #noBtn {
+            background-color: #444;
+            color: #bbb;
+            position: absolute;
+        }
+
+        /* Success Screen */
+        #success {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: black;
+            z-index: 100;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="dome-container">
+        <div class="rose">🌹</div>
+        <div class="petal" style="left: 40%; animation-delay: 1s;">🥀</div>
+    </div>
+
+    <h1 id="question">Will you be my Valentine?</h1>
+
+    <div class="buttons">
+        <button id="yesBtn">Yes</button>
+        <button id="noBtn">No</button>
+    </div>
+
+    <div id="success">
+        <h1 style="font-size: 3rem;">❤️ Yay! ❤️</h1>
+        <p>I knew you'd say yes (eventually)!</p>
+        <div style="font-size: 50px;">🌹✨👑</div>
+    </div>
+
+    <script>
+        const noBtn = document.getElementById('noBtn');
+        const yesBtn = document.getElementById('yesBtn');
+        const successDiv = document.getElementById('success');
+
+        function moveButton() {
+            // Calculate random positions within the visible window
+            // Subtract button width/height to keep it on screen
+            const x = Math.random() * (window.innerWidth - noBtn.offsetWidth);
+            const y = Math.random() * (window.innerHeight - noBtn.offsetHeight);
+            
+            noBtn.style.position = 'fixed';
+            noBtn.style.left = `${x}px`;
+            noBtn.style.top = `${y}px`;
+        }
+
+        // Desktop: Move on hover
+        noBtn.addEventListener('mouseover', moveButton);
+
+        // Mobile: Move on touch
+        noBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            moveButton();
+        });
+
+        // Yes button logic
+        yesBtn.addEventListener('click', () => {
+            successDiv.style.display = 'flex';
+        });
+    </script>
+</body>
+</html>
