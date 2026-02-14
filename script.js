@@ -1,8 +1,10 @@
 const noBtn = document.getElementById('no-btn');
 const yesBtn = document.getElementById('yes-btn');
 const cloche = document.getElementById('cloche');
+const canvas = document.getElementById('snow-canvas');
+const ctx = canvas.getContext('2d');
 
-// 1. "No" Button Runaway Logic
+// 1. Runaway "No" Button
 noBtn.addEventListener('mouseover', () => {
     const x = Math.random() * (window.innerWidth - 100);
     const y = Math.random() * (window.innerHeight - 50);
@@ -10,74 +12,65 @@ noBtn.addEventListener('mouseover', () => {
     noBtn.style.top = `${y}px`;
 });
 
-// 2. Glass Interaction
-let clicks = 0;
+// 2. Click Dome to "Break the Spell"
+let clocheClicks = 0;
 cloche.addEventListener('click', () => {
-    clicks++;
-    if (clicks >= 3) {
+    clocheClicks++;
+    if (clocheClicks >= 3) {
         cloche.classList.add('shatter');
-        setTimeout(() => cloche.style.display = 'none', 500);
     } else {
-        cloche.style.transform = 'translate(-50%, -50%) rotate(5deg)';
+        // Shake effect
+        cloche.style.transform = 'translate(-50%, -50%) rotate(3deg)';
         setTimeout(() => cloche.style.transform = 'translate(-50%, -50%) rotate(0deg)', 100);
     }
 });
 
-// 3. Falling Petals (Yes Click)
+// 3. Celebration Flurry (Stars and Petals)
 yesBtn.addEventListener('click', () => {
-    document.getElementById('question').innerText = "I love you! ❤️";
-    setInterval(createPetal, 100);
+    document.getElementById('question').innerHTML = "I Love You! ❤️";
+    setInterval(spawnParticle, 100);
 });
 
-function createPetal() {
+function spawnParticle() {
     const p = document.createElement('img');
-    p.src = 'rose-petal.png'; // Using your uploaded filename
-    p.className = 'falling-petal';
+    const isStar = Math.random() > 0.5;
+    
+    p.src = isStar ? 'star.png' : 'rose-petal.png';
+    p.className = 'falling-particle';
+    
     p.style.left = Math.random() * 100 + 'vw';
     p.style.width = (Math.random() * 20 + 10) + 'px';
     p.style.animationDuration = (Math.random() * 3 + 2) + 's';
-    document.getElementById('particle-container').appendChild(p);
     
+    document.getElementById('particle-container').appendChild(p);
     setTimeout(() => p.remove(), 5000);
 }
 
-// 4. Window Snow (Canvas)
-const canvas = document.getElementById('snow-canvas');
-const ctx = canvas.getContext('2d');
+// 4. Window Snow Logic
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
-
 let snowflakes = [];
-function createSnow() {
-    for(let i = 0; i < 50; i++) {
-        snowflakes.push({
-            x: Math.random() * (window.innerWidth * 0.3), // Only left 30% (Window)
-            y: Math.random() * window.innerHeight,
-            r: Math.random() * 3 + 1,
-            d: Math.random() * 1
-        });
-    }
+
+for(let i = 0; i < 60; i++) {
+    snowflakes.push({
+        x: Math.random() * (window.innerWidth * 0.35), // Confined to left window area
+        y: Math.random() * window.innerHeight,
+        r: Math.random() * 2 + 1,
+        d: Math.random() * 0.5 + 0.5
+    });
 }
 
 function drawSnow() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = "white";
+    ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
     ctx.beginPath();
-    for(let i = 0; i < snowflakes.length; i++) {
-        let f = snowflakes[i];
+    snowflakes.forEach(f => {
         ctx.moveTo(f.x, f.y);
-        ctx.arc(f.x, f.y, f.r, 0, Math.PI*2, true);
-    }
+        ctx.arc(f.x, f.y, f.r, 0, Math.PI*2);
+        f.y += f.d;
+        if (f.y > canvas.height) f.y = -10;
+    });
     ctx.fill();
-    updateSnow();
+    requestAnimationFrame(drawSnow);
 }
-
-function updateSnow() {
-    for(let i = 0; i < snowflakes.length; i++) {
-        let f = snowflakes[i];
-        f.y += Math.pow(f.d, 2) + 1;
-        if(f.y > canvas.height) snowflakes[i] = {x: Math.random() * (canvas.width * 0.3), y: 0, r: f.r, d: f.d};
-    }
-}
-createSnow();
-setInterval(drawSnow, 30);
+drawSnow();
