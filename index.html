@@ -2,34 +2,227 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enchanted Valentine</title>
-    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>The Enchanted Chalet</title>
+    <style>
+        :root {
+            --pink-glow: rgba(255, 77, 109, 0.6);
+            --gold-spark: #ffd700;
+        }
+
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            overflow: hidden; background: #000; font-family: 'Georgia', serif;
+        }
+
+        /* 1. THE SETTING: Background Image */
+        #stage {
+            position: relative; width: 100vw; height: 100vh;
+            background: url('background.jpg') no-repeat center center;
+            background-size: cover;
+            transition: filter 1s ease;
+        }
+
+        /* 1.1 Fireplace Flicker Effect */
+        #fire-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at 70% 50%, rgba(255, 100, 0, 0.15), transparent);
+            pointer-events: none; mix-blend-mode: color-dodge;
+            animation: flicker 0.15s infinite alternate;
+        }
+
+        @keyframes flicker {
+            0% { opacity: 0.8; } 100% { opacity: 1; }
+        }
+
+        /* 1.2 Falling Snow (Outside the window) */
+        .snowflake {
+            position: absolute; color: white; font-size: 10px; pointer-events: none;
+            z-index: 1; animation: snow-fall linear infinite;
+        }
+
+        @keyframes snow-fall {
+            to { transform: translateY(100vh) translateX(20px); }
+        }
+
+        /* 2. THE INTERACTION: The Cloche Logic */
+        #cloche-hitbox {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -60%);
+            width: 250px; height: 350px;
+            cursor: pointer; z-index: 20;
+            border-radius: 125px 125px 50px 50px;
+        }
+
+        #magic-glow {
+            position: absolute; width: 100%; height: 100%;
+            background: var(--pink-glow); border-radius: inherit;
+            filter: blur(40px); opacity: 0.3;
+            transition: opacity 0.3s, transform 0.3s;
+            pointer-events: none;
+        }
+
+        .cracks {
+            position: absolute; width: 100%; height: 100%;
+            border: 2px solid white; border-radius: inherit;
+            opacity: 0; pointer-events: none;
+            box-shadow: 0 0 15px white; transition: 0.3s;
+        }
+
+        /* 3. THE REVEAL: Question and Buttons */
+        #proposal-ui {
+            position: absolute; bottom: 15%; width: 100%;
+            display: none; flex-direction: column; align-items: center;
+            z-index: 30; opacity: 0; transition: opacity 1s;
+        }
+
+        .valentine-text {
+            color: white; font-size: 2.2rem; margin-bottom: 20px;
+            text-shadow: 0 0 15px var(--gold-spark), 0 0 5px black;
+        }
+
+        .btn-container { display: flex; gap: 40px; position: relative; width: 300px; justify-content: center; }
+        .btn {
+            padding: 15px 40px; font-size: 1.3rem; border-radius: 50px;
+            border: none; cursor: pointer; font-weight: bold; transition: 0.2s;
+        }
+        #yesBtn { background: #ff4d6d; color: white; box-shadow: 0 0 20px #ff4d6d; }
+        #noBtn { background: #333; color: #999; }
+
+        /* Celebration Items */
+        .celebration-item {
+            position: fixed; pointer-events: none; z-index: 1000;
+            animation: burst 4s forwards;
+        }
+
+        @keyframes burst {
+            0% { transform: scale(0) rotate(0); opacity: 1; }
+            100% { transform: scale(1.5) rotate(720deg) translate(var(--x), var(--y)); opacity: 0; }
+        }
+
+        #instruction {
+            position: absolute; bottom: 5%; width: 100%; text-align: center;
+            color: rgba(255,255,255,0.7); font-size: 1.1rem;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
+    </style>
 </head>
 <body>
-    <div id="container">
-        <div id="bg-layer"></div>
 
-        <canvas id="snow-canvas"></canvas>
-
-        <div id="fire-glow"></div>
-
-        <div id="rose-area">
-            <img src="glass-cloche.png" id="cloche" alt="Glass Dome">
+    <div id="stage">
+        <div id="fire-overlay"></div>
+        
+        <div id="cloche-hitbox">
+            <div id="magic-glow"></div>
+            <div id="cracks-1" class="cracks" style="transform: scale(0.9) rotate(5deg);"></div>
+            <div id="cracks-2" class="cracks" style="transform: scale(0.95) rotate(-10deg);"></div>
         </div>
 
-        <div id="ui-overlay">
-            <h1 id="question">Will you be my Valentine?</h1>
-            <div class="button-box">
-                <button id="yes-btn">Yes</button>
-                <button id="no-btn">No</button>
+        <div id="instruction">Touch the glass to break the spell...</div>
+
+        <div id="proposal-ui">
+            <h1 class="valentine-text">Will you be my Valentine?</h1>
+            <div class="btn-container">
+                <button id="yesBtn" class="btn">Yes</button>
+                <button id="noBtn" class="btn">No</button>
             </div>
         </div>
-
-        <div id="particle-container"></div>
     </div>
 
-    <script src="script.js"></script>
+    <audio id="fireSound" loop><source src="fire_crackle.mp3" type="audio/mpeg"></audio>
+    <audio id="music" loop><source src="romantic_melody.mp3" type="audio/mpeg"></audio>
+    <audio id="chime"><source src="chime.mp3" type="audio/mpeg"></audio>
+
+    <script>
+        let clicks = 0;
+        const hitbox = document.getElementById('cloche-hitbox');
+        const glow = document.getElementById('magic-glow');
+        const ui = document.getElementById('proposal-ui');
+        const instruction = document.getElementById('instruction');
+        const noBtn = document.getElementById('noBtn');
+        const yesBtn = document.getElementById('yesBtn');
+
+        // Audio controls
+        function playInteractionSounds() {
+            document.getElementById('fireSound').play();
+            document.getElementById('music').play();
+        }
+
+        hitbox.addEventListener('click', () => {
+            clicks++;
+            if (clicks === 1) playInteractionSounds();
+            
+            // Reaction
+            document.getElementById('chime').play();
+            glow.style.opacity = (clicks * 0.3);
+            glow.style.transform = `scale(${1 + (clicks * 0.1)})`;
+
+            if (clicks === 1) document.getElementById('cracks-1').style.opacity = "0.4";
+            if (clicks === 2) document.getElementById('cracks-2').style.opacity = "0.7";
+
+            if (clicks === 3) {
+                // PHASE 2: THE REVEAL
+                hitbox.style.display = 'none';
+                instruction.style.display = 'none';
+                ui.style.display = 'flex';
+                setTimeout(() => { ui.style.opacity = '1'; }, 100);
+                
+                // Dissolve burst
+                createBurst(window.innerWidth/2, window.innerHeight/2, 50);
+            }
+        });
+
+        // "No" button runaway logic
+        function moveNo() {
+            const x = Math.random() * (window.innerWidth - 100);
+            const y = Math.random() * (window.innerHeight - 100);
+            noBtn.style.position = 'fixed';
+            noBtn.style.left = x + 'px';
+            noBtn.style.top = y + 'px';
+        }
+        noBtn.addEventListener('mouseover', moveNo);
+        noBtn.addEventListener('touchstart', (e) => { e.preventDefault(); moveNo(); });
+
+        // Final Celebration
+        yesBtn.addEventListener('click', () => {
+            noBtn.style.display = 'none';
+            document.getElementById('fire-overlay').style.animationDuration = "0.05s"; // Fire flares up
+            createBurst(window.innerWidth/2, window.innerHeight/2, 150);
+            
+            setTimeout(() => {
+                ui.innerHTML = `<h1 style="font-size: 4rem; text-shadow: 0 0 20px gold;">Yay! ❤️</h1>
+                                <p style="color:white; font-size: 1.5rem;">I knew you'd say yes (eventually)!</p>`;
+            }, 500);
+        });
+
+        function createBurst(originX, originY, count) {
+            for (let i = 0; i < count; i++) {
+                const p = document.createElement('div');
+                const type = ['🌹', '✨', '💖', '⭐'][Math.floor(Math.random() * 4)];
+                p.innerHTML = type;
+                p.className = 'celebration-item';
+                p.style.left = originX + 'px';
+                p.style.top = originY + 'px';
+                p.style.setProperty('--x', (Math.random() - 0.5) * 1000 + 'px');
+                p.style.setProperty('--y', (Math.random() - 0.5) * 1000 + 'px');
+                document.body.appendChild(p);
+                setTimeout(() => p.remove(), 4000);
+            }
+        }
+
+        // Add snow outside
+        setInterval(() => {
+            const snow = document.createElement('div');
+            snow.innerHTML = '•';
+            snow.className = 'snowflake';
+            snow.style.left = (Math.random() * 40) + 'vw'; // Only on left side (window)
+            snow.style.opacity = Math.random();
+            snow.style.animationDuration = (Math.random() * 3 + 2) + 's';
+            document.body.appendChild(snow);
+            setTimeout(() => snow.remove(), 5000);
+        }, 200);
+    </script>
 </body>
 </html>
-
