@@ -2,33 +2,176 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enchanted Valentine</title>
-    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>An Enchanted Invitation</title>
+    <style>
+        :root {
+            --rose-red: #ff4d6d;
+            --gold: #ffd700;
+            --glass: rgba(255, 255, 255, 0.2);
+        }
+
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at center, #2b0308 0%, #000 100%);
+            color: white; font-family: 'Serif', 'Georgia', serif;
+            overflow: hidden; display: flex; align-items: center; justify-content: center;
+        }
+
+        #main-card {
+            display: flex; flex-direction: column; align-items: center; text-align: center;
+        }
+
+        /* The Glass Dome - pointer-events: none prevents it from blocking the buttons */
+        .dome-wrapper {
+            position: relative; width: 220px; height: 320px; margin-bottom: 20px;
+            pointer-events: none; 
+        }
+
+        .glass-dome {
+            position: absolute; width: 100%; height: 100%;
+            border: 2px solid var(--glass);
+            border-radius: 110px 110px 20px 20px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 60%);
+            box-shadow: inset 0 0 20px rgba(255,255,255,0.1), 0 0 40px rgba(255,77,109,0.2);
+            transition: transform 0.3s, opacity 0.5s;
+            z-index: 2;
+        }
+
+        .shattered {
+            transform: scale(1.5) rotate(10deg); opacity: 0;
+        }
+
+        .rose-container {
+            font-size: 100px; position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            filter: drop-shadow(0 0 20px var(--rose-red));
+            animation: float 4s infinite ease-in-out;
+            z-index: 1;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -55%) scale(1.05); }
+        }
+
+        h1 { font-size: 1.8rem; text-shadow: 0 0 10px var(--gold); margin: 20px 0; }
+
+        /* Buttons - Side by Side on load */
+        .btn-container {
+            display: flex; gap: 40px; height: 60px; align-items: center; justify-content: center;
+            width: 100vw; position: relative;
+        }
+
+        .btn {
+            padding: 12px 30px; font-size: 1.2rem; border-radius: 50px; border: none;
+            cursor: pointer; font-weight: bold; transition: 0.2s;
+        }
+
+        #yesBtn { background: var(--rose-red); color: white; box-shadow: 0 0 20px var(--rose-red); z-index: 5; }
+
+        #noBtn { 
+            background: #333; color: #999; position: relative; 
+            transition: left 0.1s ease, top 0.1s ease;
+            z-index: 6; /* Slightly higher than Yes just to be safe */
+        }
+
+        /* Petal Flurry */
+        .petal {
+            position: fixed; top: -10%; font-size: 24px;
+            user-select: none; pointer-events: none; z-index: 100;
+            animation: fall linear forwards;
+        }
+
+        @keyframes fall {
+            to { transform: translateY(110vh) rotate(360deg); opacity: 0; }
+        }
+
+        /* Success screen overlay */
+        #success-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); display: none;
+            flex-direction: column; align-items: center; justify-content: center; z-index: 1000;
+        }
+    </style>
 </head>
 <body>
-    <div id="container">
-        <div id="bg-layer"></div>
 
-        <canvas id="snow-canvas"></canvas>
-
-        <div id="fire-glow"></div>
-
-        <div id="rose-area">
-            <img src="glass-cloche.jpg" id="cloche" alt="Glass Dome">
+    <div id="main-card">
+        <div class="dome-wrapper">
+            <div id="dome" class="glass-dome"></div>
+            <div class="rose-container">🌹</div>
         </div>
+        
+        <h1 id="question">Will you be my Valentine?</h1>
 
-        <div id="ui-overlay">
-            <h1 id="question">Will you be my Valentine?</h1>
-            <div class="button-box">
-                <button id="yes-btn">Yes</button>
-                <button id="no-btn">No</button>
-            </div>
+        <div class="btn-container">
+            <button id="yesBtn" class="btn">Yes</button>
+            <button id="noBtn" class="btn">No</button>
         </div>
-
-        <div id="particle-container"></div>
     </div>
 
-    <script src="script.js"></script>
+    <div id="success-overlay">
+        <h1 style="font-size: 3.5rem;">Yay! ❤️</h1>
+        <p style="font-size: 1.2rem;">The spell is broken!</p>
+        <div style="font-size: 50px; margin-top: 20px;">🥀✨👑</div>
+    </div>
+
+    <script>
+        const noBtn = document.getElementById('noBtn');
+        const yesBtn = document.getElementById('yesBtn');
+        const dome = document.getElementById('dome');
+        const success = document.getElementById('success-overlay');
+
+        function escape(e) {
+            // Calculate distance to edges so it doesn't leave the screen
+            const padding = 50;
+            const maxX = window.innerWidth - noBtn.offsetWidth - padding;
+            const maxY = window.innerHeight - noBtn.offsetHeight - padding;
+            
+            const randomX = Math.max(padding, Math.floor(Math.random() * maxX));
+            const randomY = Math.max(padding, Math.floor(Math.random() * maxY));
+
+            // Switch to fixed positioning the moment it needs to move
+            noBtn.style.position = "fixed";
+            noBtn.style.left = randomX + "px";
+            noBtn.style.top = randomY + "px";
+        }
+
+        // Mouse trigger for desktop
+        noBtn.addEventListener('mouseover', escape);
+
+        // Touch trigger for mobile
+        noBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            escape();
+        });
+
+        // The "Yes" Logic
+        yesBtn.addEventListener('click', () => {
+            dome.classList.add('shattered');
+            
+            for(let i=0; i<60; i++) {
+                setTimeout(createPetal, i * 80);
+            }
+
+            setTimeout(() => {
+                success.style.display = 'flex';
+            }, 1500);
+        });
+
+        function createPetal() {
+            const petal = document.createElement('div');
+            // Mixing in some sparkles with the petals
+            petal.innerHTML = Math.random() > 0.3 ? '🌹' : '✨';
+            petal.className = 'petal';
+            petal.style.left = Math.random() * 100 + 'vw';
+            petal.style.animationDuration = (Math.random() * 3 + 2) + 's';
+            petal.style.opacity = Math.random();
+            document.body.appendChild(petal);
+            
+            setTimeout(() => petal.remove(), 5000);
+        }
+    </script>
 </body>
 </html>
