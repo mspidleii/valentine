@@ -2,169 +2,172 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>A Special Message</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>An Enchanted Invitation</title>
     <style>
         :root {
-            --rose-red: #e63946;
-            --gold: #ffb703;
-            --glass: rgba(255, 255, 255, 0.15);
+            --rose-red: #ff4d6d;
+            --gold: #ffd700;
+            --glass: rgba(255, 255, 255, 0.2);
         }
 
-        body {
-            margin: 0;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            background: radial-gradient(circle, #1a0105 0%, #000000 100%);
-            color: white;
-            font-family: 'Georgia', serif;
-            overflow: hidden;
-            touch-action: manipulation;
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at center, #2b0308 0%, #000 100%);
+            color: white; font-family: 'Serif', 'Georgia', serif;
+            overflow: hidden; display: flex; align-items: center; justify-content: center;
         }
 
-        /* The Enchanted Rose Container */
-        .dome-container {
-            position: relative;
-            width: 200px;
-            height: 300px;
+        #main-card {
+            display: flex; flex-direction: column; align-items: center; text-align: center;
+        }
+
+        /* The Glass Dome */
+        .dome-wrapper {
+            position: relative; width: 220px; height: 320px; margin-bottom: 20px;
+        }
+
+        .glass-dome {
+            position: absolute; width: 100%; height: 100%;
             border: 2px solid var(--glass);
-            border-radius: 100px 100px 10px 10px;
-            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 50%);
-            box-shadow: 0 0 30px rgba(255, 255, 255, 0.1);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-bottom: 30px;
+            border-radius: 110px 110px 20px 20px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 60%);
+            box-shadow: inset 0 0 20px rgba(255,255,255,0.1), 0 0 40px rgba(255,77,109,0.2);
+            transition: transform 0.3s, opacity 0.5s;
+            z-index: 2;
         }
 
-        .rose {
-            font-size: 80px;
-            filter: drop-shadow(0 0 15px var(--rose-red));
-            animation: pulse 3s infinite ease-in-out;
+        .shattered {
+            transform: scale(1.5) rotate(10deg); opacity: 0; pointer-events: none;
         }
 
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); opacity: 0.8; }
-            50% { transform: scale(1.05); opacity: 1; filter: drop-shadow(0 0 25px var(--rose-red)); }
+        .rose-container {
+            font-size: 100px; position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            filter: drop-shadow(0 0 20px var(--rose-red));
+            animation: float 4s infinite ease-in-out;
+            z-index: 1;
         }
 
+        @keyframes float {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -55%) scale(1.05); }
+        }
+
+        h1 { font-size: 1.8rem; text-shadow: 0 0 10px var(--gold); margin: 20px 0; }
+
+        /* Buttons */
+        .btn-container {
+            display: flex; gap: 40px; height: 60px; align-items: center; justify-content: center;
+            width: 100vw; position: relative;
+        }
+
+        .btn {
+            padding: 12px 30px; font-size: 1.2rem; border-radius: 50px; border: none;
+            cursor: pointer; font-weight: bold; transition: 0.2s;
+        }
+
+        #yesBtn { background: var(--rose-red); color: white; box-shadow: 0 0 20px var(--rose-red); z-index: 5; }
+
+        #noBtn { 
+            background: #333; color: #999; position: relative; 
+            transition: left 0.2s ease, top 0.2s ease;
+        }
+
+        /* Petal Flurry */
         .petal {
-            position: absolute;
-            bottom: 20px;
-            font-size: 20px;
-            opacity: 0.6;
-            animation: fall 5s infinite linear;
+            position: fixed; top: -10%; font-size: 24px;
+            user-select: none; pointer-events: none; z-index: 100;
+            animation: fall linear forwards;
         }
 
-        h1 {
-            text-align: center;
-            font-size: 1.8rem;
-            text-shadow: 0 0 10px var(--gold);
-            margin-bottom: 40px;
-            padding: 0 20px;
+        @keyframes fall {
+            to { transform: translateY(110vh) rotate(360deg); opacity: 0; }
         }
 
-        .buttons {
-            display: flex;
-            gap: 20px;
-            position: relative;
-            width: 100%;
-            justify-content: center;
-            height: 50px;
-        }
-
-        button {
-            padding: 12px 25px;
-            font-size: 1.2rem;
-            border-radius: 25px;
-            border: none;
-            cursor: pointer;
-            transition: transform 0.2s;
-            font-family: 'Georgia', serif;
-        }
-
-        #yesBtn {
-            background-color: var(--rose-red);
-            color: white;
-            box-shadow: 0 0 15px var(--rose-red);
-            z-index: 10;
-        }
-
-        #noBtn {
-            background-color: #444;
-            color: #bbb;
-            position: absolute;
-        }
-
-        /* Success Screen */
-        #success {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: black;
-            z-index: 100;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
+        /* Success screen overlay */
+        #success-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); display: none;
+            flex-direction: column; align-items: center; justify-content: center; z-index: 1000;
         }
     </style>
 </head>
 <body>
 
-    <div class="dome-container">
-        <div class="rose">🌹</div>
-        <div class="petal" style="left: 40%; animation-delay: 1s;">🥀</div>
+    <div id="main-card">
+        <div class="dome-wrapper">
+            <div id="dome" class="glass-dome"></div>
+            <div class="rose-container">🌹</div>
+        </div>
+        
+        <h1 id="question">Will you be my Valentine?</h1>
+
+        <div class="btn-container">
+            <button id="yesBtn" class="btn">Yes</button>
+            <button id="noBtn" class="btn">No</button>
+        </div>
     </div>
 
-    <h1 id="question">Will you be my Valentine?</h1>
-
-    <div class="buttons">
-        <button id="yesBtn">Yes</button>
-        <button id="noBtn">No</button>
-    </div>
-
-    <div id="success">
-        <h1 style="font-size: 3rem;">❤️ Yay! ❤️</h1>
-        <p>I knew you'd say yes (eventually)!</p>
-        <div style="font-size: 50px;">🌹✨👑</div>
+    <div id="success-overlay">
+        <h1 style="font-size: 3.5rem;">Yay! ❤️</h1>
+        <p style="font-size: 1.2rem;">The spell is broken!</p>
+        <div style="font-size: 50px; margin-top: 20px;">🥀✨👑</div>
     </div>
 
     <script>
         const noBtn = document.getElementById('noBtn');
         const yesBtn = document.getElementById('yesBtn');
-        const successDiv = document.getElementById('success');
+        const dome = document.getElementById('dome');
+        const success = document.getElementById('success-overlay');
 
-        function moveButton() {
-            // Calculate random positions within the visible window
-            // Subtract button width/height to keep it on screen
-            const x = Math.random() * (window.innerWidth - noBtn.offsetWidth);
-            const y = Math.random() * (window.innerHeight - noBtn.offsetHeight);
+        // The "Runaway" Logic
+        function escape(e) {
+            const padding = 20;
+            const maxX = window.innerWidth - noBtn.offsetWidth - padding;
+            const maxY = window.innerHeight - noBtn.offsetHeight - padding;
             
-            noBtn.style.position = 'fixed';
-            noBtn.style.left = `${x}px`;
-            noBtn.style.top = `${y}px`;
+            const randomX = Math.max(padding, Math.floor(Math.random() * maxX));
+            const randomY = Math.max(padding, Math.floor(Math.random() * maxY));
+
+            noBtn.style.position = "fixed";
+            noBtn.style.left = randomX + "px";
+            noBtn.style.top = randomY + "px";
         }
 
-        // Desktop: Move on hover
-        noBtn.addEventListener('mouseover', moveButton);
-
-        // Mobile: Move on touch
+        noBtn.addEventListener('mouseover', escape);
         noBtn.addEventListener('touchstart', (e) => {
             e.preventDefault();
-            moveButton();
+            escape();
         });
 
-        // Yes button logic
+        // The "Yes" Logic
         yesBtn.addEventListener('click', () => {
-            successDiv.style.display = 'flex';
+            // Shatter the glass
+            dome.classList.add('shattered');
+            
+            // Start the petal flurry
+            for(let i=0; i<50; i++) {
+                setTimeout(createPetal, i * 100);
+            }
+
+            // Show success screen after a short delay
+            setTimeout(() => {
+                success.style.display = 'flex';
+            }, 1500);
         });
+
+        function createPetal() {
+            const petal = document.createElement('div');
+            petal.innerHTML = '🌹';
+            petal.className = 'petal';
+            petal.style.left = Math.random() * 100 + 'vw';
+            petal.style.animationDuration = (Math.random() * 3 + 2) + 's';
+            petal.style.opacity = Math.random();
+            document.body.appendChild(petal);
+            
+            setTimeout(() => petal.remove(), 5000);
+        }
     </script>
 </body>
 </html>
