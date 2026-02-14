@@ -1,78 +1,90 @@
 body, html {
     margin: 0;
     padding: 0;
-    width: 100vw;
-    height: 100vh;
-    background-color: #000;
+    width: 100%;
+    height: 100%;
     overflow: hidden;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    background-color: #000;
+    font-family: 'Georgia', serif;
 }
 
 #container {
     position: relative;
-    /* This ensures your UI doesn't float to the side */
-    width: 100%;
-    height: 100%;
-    max-width: 1200px; /* Adjust based on your background width */
-    aspect-ratio: 4 / 3; 
+    width: 100vw;
+    height: 100vh;
 }
 
-#bg-layer {
+/* Background Logic */
+.base-bg {
     position: absolute;
-    top: 0;
-    left: 0;
     width: 100%;
     height: 100%;
     background: url('background-without-glass.jpg') no-repeat center center;
-    background-size: contain;
+    background-size: cover;
     z-index: 1;
 }
 
-/* Forces the cloche to sit directly on the table in the center */
+/* Fireplace Glow Effect */
+#fire-glow {
+    position: absolute;
+    right: 15%;
+    bottom: 30%;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(255,100,0,0.4) 0%, rgba(0,0,0,0) 70%);
+    z-index: 2;
+    animation: flicker 0.15s infinite alternate;
+    pointer-events: none;
+}
+
+@keyframes flicker {
+    from { opacity: 0.7; transform: scale(1); }
+    to { opacity: 1; transform: scale(1.05); }
+}
+
+/* The Glass Cloche */
 #cloche {
     position: absolute;
     left: 50%;
-    top: 52%; /* Adjust this % to sit the cloche on the table */
+    top: 50%;
     transform: translate(-50%, -50%);
-    height: 50%; /* Scale it to fit the rose height */
+    width: 30%; /* Adjust based on your image size */
     z-index: 5;
-    cursor: pointer;
+    transition: all 0.5s ease;
 }
 
-/* Fixes the UI floating off to the right */
-#ui {
+.shatter {
+    transform: translate(-50%, -60%) scale(1.5) !important;
+    opacity: 0;
+}
+
+/* UI Elements */
+#question {
     position: absolute;
-    bottom: 12%;
-    left: 50%;
-    transform: translateX(-50%);
-    text-align: center;
+    top: 65%;
     width: 100%;
+    text-align: center;
+    color: #fff;
+    text-shadow: 2px 2px 10px rgba(0,0,0,0.8);
     z-index: 10;
 }
 
-#question {
-    color: white;
-    font-family: 'Georgia', serif;
-    text-shadow: 0 0 10px rgba(0,0,0,0.8);
-    font-size: 2.5rem;
-    margin-bottom: 20px;
-}
-
-.buttons {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
+.button-box {
+    position: absolute;
+    top: 75%;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
 }
 
 button {
     padding: 15px 40px;
-    font-size: 1.2rem;
+    font-size: 20px;
     border-radius: 50px;
     border: none;
     cursor: pointer;
+    margin: 0 10px;
 }
 
 #yes-btn { background: #ff4d6d; color: white; }
-#no-btn { background: #444; color: white; position: absolute; }
+#no-btn { background: #555; color: white; position: absolute; }
