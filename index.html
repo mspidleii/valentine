@@ -3,28 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Valentine's Magic</title>
+    <title>Enchanted Valentine</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div id="container">
-        <div id="bg-layer"></div>
+        <div id="bg-layer" class="base-bg"></div>
 
         <canvas id="snow-canvas"></canvas>
+
         <div id="fire-glow"></div>
 
-        <img src="glass-cloche.png" id="cloche" alt="Glass Cloche">
+        <img src="glass-cloche.png" id="cloche" alt="Glass Dome">
 
-        <div id="ui">
-            <h1 id="question">Will you be my Valentine?</h1>
-            <div class="buttons">
-                <button id="yes-btn">Yes</button>
-                <button id="no-btn">No</button>
-            </div>
+        <h1 id="question">Will you be my Valentine?</h1>
+        <div class="button-box">
+            <button id="yes-btn">Yes</button>
+            <button id="no-btn">No</button>
         </div>
 
         <div id="particle-container"></div>
     </div>
+
     <script src="script.js"></script>
 </body>
 </html>
