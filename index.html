@@ -205,15 +205,15 @@
 
         #cloche-hitbox {
             position: absolute; top: 50%; left: 50%;
-            transform: translate(-50%, -60%);
-            width: 220px; height: 320px;
+            transform: translate(-50%, -55%);
+            width: 320px; height: 440px;
             cursor: pointer; z-index: 20;
-            border-radius: 110px 110px 40px 40px;
+            border-radius: 160px 160px 60px 60px;
             transition: transform 0.3s;
         }
 
         #cloche-hitbox:active {
-            transform: translate(-50%, -60%) scale(0.97);
+            transform: translate(-50%, -55%) scale(0.97);
         }
 
         #magic-glow {
@@ -225,42 +225,41 @@
             pointer-events: none;
         }
 
-        /* Light cracks */
+         /* Light cracks - dynamically positioned at click point */
         .crack-line {
             position: absolute; pointer-events: none;
-            opacity: 0; transition: opacity 0.6s ease;
+            opacity: 0; transition: opacity 0.8s ease;
         }
-
+ 
         .crack-line svg {
             width: 100%; height: 100%;
-            filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.8)) drop-shadow(0 0 12px rgba(255, 200, 255, 0.4));
+            filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.9)) drop-shadow(0 0 16px rgba(255, 200, 255, 0.5));
         }
-
+ 
         .crack-line svg path {
             stroke: rgba(255, 255, 255, 0.9);
             stroke-width: 1.5;
             fill: none;
-            stroke-dasharray: 200;
-            stroke-dashoffset: 200;
-            transition: stroke-dashoffset 1s ease;
+            stroke-dasharray: 300;
+            stroke-dashoffset: 300;
         }
-
+ 
         .crack-line.visible svg path {
             stroke-dashoffset: 0;
+            transition: stroke-dashoffset 1.8s cubic-bezier(0.2, 0.8, 0.3, 1);
         }
-
-        #crack-1 {
-            top: 20%; left: 30%; width: 90px; height: 120px;
+ 
+        /* Sub-cracks that branch out after main crack draws */
+        .crack-line .sub-crack {
+            stroke-dasharray: 150;
+            stroke-dashoffset: 150;
         }
-
-        #crack-2 {
-            top: 35%; left: 55%; width: 80px; height: 100px;
+ 
+        .crack-line.visible .sub-crack {
+            stroke-dashoffset: 0;
+            transition: stroke-dashoffset 1.4s cubic-bezier(0.2, 0.8, 0.3, 1) 0.6s;
         }
-
-        #crack-3 {
-            top: 15%; left: 45%; width: 100px; height: 140px;
-        }
-
+        
         /* Glass shatter pieces */
         .glass-shard {
             position: absolute;
@@ -269,20 +268,30 @@
         }
 
         .glass-shard.shatter {
-            animation: shard-fly var(--shard-duration, 1.5s) cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+            animation: shard-fly var(--shard-duration, 2.5s) cubic-bezier(0.15, 0.6, 0.35, 1) forwards;
         }
-
+ 
         @keyframes shard-fly {
             0% {
                 opacity: 1;
                 transform: translate(0, 0) rotate(0deg) scale(1);
+                filter: brightness(2);
+            }
+            15% {
+                opacity: 1;
+                filter: brightness(1.5);
             }
             40% {
-                opacity: 0.9;
+                opacity: 0.85;
+                filter: brightness(1);
+            }
+            70% {
+                opacity: 0.4;
             }
             100% {
                 opacity: 0;
                 transform: translate(var(--sx, 100px), var(--sy, -200px)) rotate(var(--sr, 360deg)) scale(0);
+                filter: brightness(0.5);
             }
         }
 
@@ -371,7 +380,17 @@
             font-size: var(--csize, 24px);
             animation: burst var(--burst-duration, 3.5s) cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
         }
-
+        
+        /* CSS rose petal shape for burst particles */
+        .celebration-item.css-petal {
+            font-size: 0;
+            width: var(--petal-w, 18px);
+            height: var(--petal-h, 24px);
+            background: var(--petal-color, rgba(220, 50, 80, 0.85));
+            border-radius: 50% 0 50% 0;
+            box-shadow: inset 0 0 6px rgba(255, 150, 180, 0.4), 0 0 8px rgba(255, 50, 80, 0.3);
+        }
+        
         @keyframes burst {
             0% {
                 transform: scale(0) rotate(0deg);
@@ -517,16 +536,8 @@
         <div id="cloche-hitbox">
             <div id="magic-glow"></div>
 
-            <!-- SVG light cracks -->
-            <div id="crack-1" class="crack-line">
-                <svg viewBox="0 0 90 120"><path d="M45 0 L38 30 L50 50 L35 80 L42 120"/></svg>
-            </div>
-            <div id="crack-2" class="crack-line">
-                <svg viewBox="0 0 80 100"><path d="M10 20 L35 35 L25 60 L45 80 L55 100"/></svg>
-            </div>
-            <div id="crack-3" class="crack-line">
-                <svg viewBox="0 0 100 140"><path d="M60 0 L50 40 L70 70 L55 100 L65 140"/></svg>
-            </div>
+            <!-- Cracks are generated dynamically at click/touch point -->
+            <div id="cracks-container"></div>
         </div>
 
         <!-- Instruction text -->
@@ -1012,3 +1023,4 @@
     </script>
 </body>
 </html>
+
